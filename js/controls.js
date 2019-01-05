@@ -6,6 +6,7 @@ var controls = {
 var controlElements = {
 	source: document.getElementById('audio-source'),
 	duration: document.getElementById('audio-duration'),
+	save: document.getElementById('audio-save'),
 }
 
 populateAudioSources = function() {
@@ -54,7 +55,7 @@ controlElements.source.addEventListener('change', changeAudioSource = function(e
 });
 
 var _durationChangeTimeout = undefined;
-controlElements.duration.addEventListener('input', changeAudioDuration = function(event) {
+changeAudioDuration = function(event) {
 	// _durationChangeTimeout is a global that's effectively debouncing this function
 	if(_durationChangeTimeout !== undefined) {
 		clearTimeout(_durationChangeTimeout);
@@ -72,4 +73,13 @@ controlElements.duration.addEventListener('input', changeAudioDuration = functio
 			window.dispatchEvent(new Event('controls.duration.change'));
 		}
 	}, 500);
+}();
+controlElements.duration.addEventListener('input', changeAudioDuration);
+
+window.addEventListener('audio.recorder.start', enableSaveAudio = function() {
+	controlElements.save.disabled = false;
+});
+
+controlElements.save.addEventListener('click', clickSaveAudio = function() {
+	window.dispatchEvent(new Event('controls.save'));
 });
