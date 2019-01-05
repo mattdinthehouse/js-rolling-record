@@ -16,7 +16,7 @@
 
 		<!-- Controls -->
 		<div class="form-row mt-5">
-			<div class="form-group col-md-6 col-lg-5">
+			<div class="form-group col-lg-4">
 				<div class="input-group">
 					<div class="input-group-prepend">
 						<label for="audio-source" class="input-group-text">
@@ -32,18 +32,29 @@
 				</div>
 			</div>
 
-			<div class="form-group col-md-4 col-lg-5">
+			<div class="form-group col-md-6 col-lg-3">
 				<div class="input-group">
 					<div class="input-group-prepend">
 						<label for="audio-duration" class="input-group-text">
 							Seconds:
 						</label>
 					</div>
-					<input type="number" id="audio-duration" class="form-control" value="10"/>
+					<input type="number" id="audio-duration" class="form-control" min="1" value="10"/>
 				</div>
 			</div>
 
-			<div class="form-group col-md-2">
+			<div class="form-group col-md-6 col-lg-3">
+				<div class="input-group">
+					<div class="input-group-prepend">
+						<label for="audio-channels" class="input-group-text">
+							Channels:
+						</label>
+					</div>
+					<input type="number" id="audio-channels" class="form-control" min="1" value="2"/>
+				</div>
+			</div>
+
+			<div class="form-group col-lg-2">
 				<button id="audio-save" class="btn btn-primary w-100" disabled>
 					Save
 				</button>

@@ -1,11 +1,13 @@
 var controls = {
 	source: undefined,
 	duration: undefined,
+	channels: undefined,
 };
 
 var controlElements = {
 	source: document.getElementById('audio-source'),
 	duration: document.getElementById('audio-duration'),
+	channels: document.getElementById('audio-channels'),
 	save: document.getElementById('audio-save'),
 }
 
@@ -75,6 +77,28 @@ changeAudioDuration = function(event) {
 	}, 500);
 }();
 controlElements.duration.addEventListener('input', changeAudioDuration);
+
+var _channelsChangeTimeout = undefined;
+changeAudioDuration = function(event) {
+	// _channelsChangeTimeout is a global that's effectively debouncing this function
+	if(_channelsChangeTimeout !== undefined) {
+		clearTimeout(_channelsChangeTimeout);
+	}
+
+	_channelsChangeTimeout = setTimeout(function() {
+		_channelsChangeTimeout = undefined;
+
+		var chosenChannels = controlElements.channels.value;
+
+		if(chosenChannels != controls.channels) {
+			// Different channels has been entered, trigger updates
+			controls.channels = chosenChannels;
+
+			window.dispatchEvent(new Event('controls.channels.change'));
+		}
+	}, 500);
+}();
+controlElements.channels.addEventListener('input', changeAudioDuration);
 
 window.addEventListener('audio.recorder.start', enableSaveAudio = function() {
 	controlElements.save.disabled = false;

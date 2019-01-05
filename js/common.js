@@ -4,8 +4,8 @@ function removeAllChildren(element) {
 	}
 }
 
-function encodeWAV(samples) {
-	// Ripped from https://github.com/mattdiamond/Recorderjs/blob/08e7abd99739be6946f19f6806ccb368138f2dd3/lib/recorder.js#L170
+function encodeWAV(samples, sampleRate, numChannels) {
+	// Ripped from https://github.com/mattdiamond/Recorderjs/blob/master/lib/recorder.js#L170
 	var buffer = new ArrayBuffer(44 + samples.length * 2);
 	var view = new DataView(buffer);
 
@@ -39,4 +39,19 @@ function encodeWAV(samples) {
 	floatTo16BitPCM(view, 44, samples);
 
 	return view;
+}
+
+function floatTo16BitPCM(output, offset, input) {
+	// Ripped from https://github.com/mattdiamond/Recorderjs/blob/master/lib/recorder.js#L157
+	for (var i = 0; i < input.length; i++, offset += 2) {
+		var s = Math.max(-1, Math.min(1, input[i]));
+		output.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+	}
+}
+
+function writeString(view, offset, string) {
+	// Ripped from https://github.com/mattdiamond/Recorderjs/blob/master/lib/recorder.js#L164
+	for (var i = 0; i < string.length; i++) {
+		view.setUint8(offset + i, string.charCodeAt(i));
+	}
 }
