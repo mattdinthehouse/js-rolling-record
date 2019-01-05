@@ -100,7 +100,7 @@ changeAudioDuration = function(event) {
 }();
 controlElements.channels.addEventListener('input', changeAudioDuration);
 
-window.addEventListener('audio.recorder.start', enableSaveAudio = function() {
+window.addEventListener('audio.recording', enableSaveAudio = function() {
 	controlElements.save.disabled = false;
 });
 

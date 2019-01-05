@@ -4,6 +4,27 @@ function removeAllChildren(element) {
 	}
 }
 
+function sumOfArray(array) {
+	return array.reduce(function(sum, value) {
+		return sum + value;
+	}, 0);
+}
+
+function triggerDownload(blob, filename) {
+	var a = document.createElement('a');
+	a.target = '_blank';
+	a.href = window.URL.createObjectURL(blob);
+	a.download = filename;
+
+	a.style = 'display:none';
+	document.body.appendChild(a);
+
+	a.click();
+
+	window.URL.revokeObjectURL(a.href);
+	document.body.removeChild(a);
+}
+
 function encodeWAV(samples, sampleRate, numChannels) {
 	// Ripped from https://github.com/mattdiamond/Recorderjs/blob/master/lib/recorder.js#L170
 	var buffer = new ArrayBuffer(44 + samples.length * 2);

@@ -1,9 +1,9 @@
 var audio = {
-	recorder: undefined,
 	context: new AudioContext({ sampleRate: 44100 }),
-	stream: undefined,
-	bufferLength: 0,
-	chunks: [],
+	stream: undefined, // The current stream that's being recorded
+	bufferLength: 0, // Number of samples
+	chunkDuration: [], // Duration in seconds for each chunk
+	chunks: [], // Array of channel => sample chunks
 	saves: [],
 };
 
@@ -21,29 +21,29 @@ window.addEventListener('controls.source.change', startRecordingAudio = function
 
 	navigator.mediaDevices.getUserMedia(constraints)
 		.then(function(stream) {
+			// Stop any old streams
 			if(audio.stream) {
 				audio.stream.disconnect();
 			}
 
+			// Reset everything
 			audio.stream = audio.context.createMediaStreamSource(stream);
 			audio.bufferLength = 0;
+			audio.chunkDuration = [];
 			audio.chunks = [];
 
 			for(var channel = 0; channel < controls.channels; channel++) {
 				audio.chunks[channel] = [];
 			}
 
+			// Start recording
 			var scriptProcessorNode = audio.context.createScriptProcessor(4096, controls.channels, controls.channels);
 			scriptProcessorNode.addEventListener('audioprocess', recordAudio);
 
 			audio.stream.connect(scriptProcessorNode);
 
-			window.dispatchEvent(new Event('audio.recorder.start'));
-
-			setTimeout(function() {
-				audio.stream.disconnect();
-				audio.stream = undefined;
-			}, 3000);
+			// Notify stuff that recording's begun
+			window.dispatchEvent(new Event('audio.recording'));
 		})
 		.catch(function(error) {
 			alert('Unable to open audio stream');
@@ -52,17 +52,32 @@ window.addEventListener('controls.source.change', startRecordingAudio = function
 });
 
 recordAudio = function(event) {
+	// Save the audio data
 	for(var channel = 0; channel < controls.channels; channel++) {
 		audio.chunks[channel].push(event.inputBuffer.getChannelData(channel));
 	}
 
-	audio.bufferLength += audio.chunks[0][audio.chunks[0].length - 1].length;
+	// Increment the buffer's length (in samples) and duration (in seconds)
+	audio.bufferLength += event.inputBuffer.length;
+	audio.chunkDuration.push(event.inputBuffer.duration);
 
-	// TODO: Trim audio from that's too old
+	// Trim audio that's too old
+	var sumBufferDuration = sumOfArray(audio.chunkDuration);
+	while(sumBufferDuration > controls.duration) {
+		// Remove the oldest bits
+		sumBufferDuration -= audio.chunkDuration.shift();
+		audio.bufferLength -= audio.chunks[0].shift().length;
+
+		// channel = 1 because 0 has already been .shift()'d
+		for(var channel = 1; channel < controls.channels; channel++) {
+			audio.chunks[channel].shift();
+		}
+	}
 }
 
 window.addEventListener('controls.save', saveAudio = function() {
 	// Generate the audio file
+	// 1. Merge each channel's data into a single buffer respectively
 	var merged = [];
 	for(var channel = 0; channel < controls.channels; channel++) {
 		merged[channel] = new Float32Array(audio.bufferLength);
@@ -73,6 +88,7 @@ window.addEventListener('controls.save', saveAudio = function() {
 		}
 	}
 
+	// 2. Interleave the channel buffers into a single buffer
 	var interleaved = new Float32Array(audio.bufferLength * controls.channels);
 	for(var i = 0, j = 0; i < interleaved.length; j++) {
 		for(var channel = 0; channel < controls.channels; channel++) {
@@ -89,21 +105,12 @@ window.addEventListener('controls.save', saveAudio = function() {
 	// Generate a filename
 	var filename = ''+(new Date()).getTime()+'.wav';
 
-	// Download it
+	// Download it and save
 	triggerDownload(blob, filename);
+	audio.saves.push({
+		data: blob,
+		filename: filename,
+	});
+
+	window.dispatchEvent(new Event('audio.saved'));
 });
-
-triggerDownload = function(blob, filename) {
-	var a = document.createElement('a');
-	a.target = '_blank';
-	a.href = window.URL.createObjectURL(blob);
-	a.download = filename;
-
-	a.style = 'display:none';
-	document.body.appendChild(a);
-
-	a.click();
-
-	window.URL.revokeObjectURL(a.href);
-	document.body.removeChild(a);
-}
