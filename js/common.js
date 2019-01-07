@@ -4,6 +4,10 @@ function removeAllChildren(element) {
 	}
 }
 
+function removeElement(element) {
+	element.parentNode.removeChild(element);
+}
+
 function sumOfArray(array) {
 	return array.reduce(function(sum, value) {
 		return sum + value;

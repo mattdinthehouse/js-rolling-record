@@ -1,5 +1,7 @@
 var logElements = {
 	tableBody: document.getElementById('log__body'),
+	tableNoAudio: document.getElementById('log__no-audio'),
+	clearButton: document.getElementById('log__clear'),
 };
 
 window.addEventListener('audio.saved', updateLogTable = function() {
@@ -8,7 +10,7 @@ window.addEventListener('audio.saved', updateLogTable = function() {
 	}
 
 	// Remove the "no saves" notice
-	document.getElementById('log__no-audio').style = 'display:none';
+	logElements.tableNoAudio.style = 'display:none';
 
 	// Add the latest save
 	var latestSaveIndex = audio.saves.length - 1;
@@ -39,4 +41,14 @@ logElements.tableBody.addEventListener('click', downloadSavedAudio = function(ev
 
 		triggerDownload(save.data, save.filename);
 	}
-})
+});
+
+logElements.clearButton.addEventListener('click', clearSavedAudio = function(event) {
+	// Clear the save data
+	audio.saves = [];
+
+	// Reset the log table
+	Array.from(logElements.tableBody.querySelectorAll('tr:not(#log__no-audio)')).map(removeElement);
+
+	logElements.tableNoAudio.style = '';
+});
