@@ -24,6 +24,8 @@ window.addEventListener('controls.source.change', startRecordingAudio = function
 			// Stop any old streams
 			if(audio.stream) {
 				audio.stream.disconnect();
+
+				window.dispatchEvent(new Event('audio.stopped'));
 			}
 
 			// Reset everything
@@ -110,6 +112,7 @@ window.addEventListener('controls.save', saveAudio = function() {
 	audio.saves.push({
 		data: blob,
 		filename: filename,
+		timestamp: new Date(),
 	});
 
 	window.dispatchEvent(new Event('audio.saved'));
