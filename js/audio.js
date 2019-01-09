@@ -105,7 +105,11 @@ window.addEventListener('controls.save', saveAudio = function() {
 	});
 
 	// Generate a filename
-	var filename = ''+(new Date()).getTime()+'.wav';
+	var filename = (new Date()).toISOString();
+	filename = filename.replace('T', '_');
+	filename = filename.split('.')[0];
+	filename = filename.replace(/:/g, '-');
+	filename = filename+'.wav';
 
 	// Download it and save
 	triggerDownload(blob, filename);
